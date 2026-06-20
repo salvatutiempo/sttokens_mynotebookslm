@@ -189,6 +189,18 @@ documents/          Your sources (includes a sample example.md).
 
 ## Troubleshooting
 
+- **`RuntimeError: basic_ios::clear: iostream error` while exporting.** A write
+  failed — almost always **out of disk space** (or a full `/tmp` tmpfs). The
+  export writes ~3 GB (FP16) + ~1 GB (INT4), plus the HuggingFace cache (~3 GB).
+  On a NAS where the system disk is small, point everything to a big volume:
+  ```bash
+  rm -rf models/llm-ov-int4
+  export HF_HOME=/mnt/pool/hf-cache          # HuggingFace download cache
+  export NOTEBOOKLM_MODELS_DIR=/mnt/pool/models
+  export TMPDIR=/mnt/pool/tmp                 # if /tmp is a small tmpfs
+  python download_models.py
+  ```
+
 - **`download_models.py` is killed (`SIGKILL` / signal 9) during "Applying
   Weight Compression".** This is the OOM killer: exporting/quantizing the model
   briefly needs several GB of RAM (much more than *running* it). Options:
