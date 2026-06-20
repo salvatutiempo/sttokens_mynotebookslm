@@ -1,37 +1,38 @@
-"""Configuración central del NotebookLM offline.
+"""Central configuration for the offline NotebookLM.
 
-Un único lugar para ajustar modelos, rutas y parámetros del RAG.
-Pensado para un Intel N100 (4 núcleos, sin GPU dedicada, 8-16 GB de RAM).
+A single place to tune models, paths and RAG parameters.
+Targeted at an Intel N100 (4 cores, no dedicated GPU, 8-16 GB of RAM).
 """
 
 from pathlib import Path
 
-# --- Rutas -------------------------------------------------------------------
+# --- Paths -------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-DOCUMENTS_DIR = BASE_DIR / "documents"          # tus .txt, .md y .pdf
-MODELS_DIR = BASE_DIR / "models"                # modelos exportados a OpenVINO
-INDEX_DIR = BASE_DIR / "storage" / "faiss_index"  # índice vectorial persistente
+DOCUMENTS_DIR = BASE_DIR / "documents"            # your .txt, .md and .pdf files
+MODELS_DIR = BASE_DIR / "models"                  # models exported to OpenVINO
+INDEX_DIR = BASE_DIR / "storage" / "faiss_index"  # persistent vector index
 
-# --- Modelo de lenguaje (SLM) ------------------------------------------------
-# Qwen2.5-1.5B-Instruct: equilibrio calidad/peso ideal para la N100.
-# Es reciente, multilingüe (responde bien en español) y en INT4 ocupa ~1 GB.
-# Alternativas:
-#   - "Qwen/Qwen2.5-0.5B-Instruct"  -> más ligero/rápido, menor calidad.
-#   - "meta-llama/Llama-3.2-3B-Instruct" -> mejor calidad, más lento/pesado.
+# --- Language model (SLM) ----------------------------------------------------
+# Qwen2.5-1.5B-Instruct: ideal quality/size balance for the N100.
+# It is recent, multilingual (answers well in Spanish) and ~1 GB in INT4.
+# Alternatives:
+#   - "Qwen/Qwen2.5-0.5B-Instruct"        -> lighter/faster, lower quality.
+#   - "Qwen/Qwen2.5-3B-Instruct"          -> better quality, slower (16 GB N100).
+#   - "meta-llama/Llama-3.2-3B-Instruct"  -> good quality, heavier/slower.
 LLM_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
 LLM_OV_DIR = MODELS_DIR / "llm-ov-int4"
 
-# --- Modelo de embeddings ----------------------------------------------------
-# multilingual-e5-small: ligero (~118M) y multilingüe (incluye español).
+# --- Embeddings model --------------------------------------------------------
+# multilingual-e5-small: lightweight (~118M) and multilingual (includes Spanish).
 EMBED_MODEL_ID = "intfloat/multilingual-e5-small"
 EMBED_OV_DIR = MODELS_DIR / "embed-ov"
 
 # --- Hardware ----------------------------------------------------------------
-# "CPU" es lo más estable en la N100. Puedes probar "GPU" (iGPU UHD) o "AUTO".
+# "CPU" is the most stable on the N100. You may try "GPU" (iGPU UHD) or "AUTO".
 DEVICE = "CPU"
 
-# --- Parámetros del RAG ------------------------------------------------------
-CHUNK_SIZE = 800          # caracteres por fragmento
-CHUNK_OVERLAP = 120       # solapamiento entre fragmentos
-RETRIEVER_K = 4           # nº de fragmentos recuperados por pregunta
-MAX_NEW_TOKENS = 512      # longitud máxima de la respuesta
+# --- RAG parameters ----------------------------------------------------------
+CHUNK_SIZE = 800          # characters per chunk
+CHUNK_OVERLAP = 120       # overlap between chunks
+RETRIEVER_K = 4           # number of chunks retrieved per question
+MAX_NEW_TOKENS = 512      # maximum answer length

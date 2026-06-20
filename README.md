@@ -129,9 +129,9 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
    ```
 
    ```
-   You > In what year was Vinotopía founded?
+   You > In what year was Vinotopia founded?
    AI  > According to the document, in the year 2026.
-   Sources: documents/ejemplo.md
+   Sources: documents/example.md
    ```
 
    **Web (Streamlit):**
@@ -144,7 +144,7 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
    re-index documents from the interface itself.
 
 Whenever you add or change documents, run `python ingest.py` again (or click
-**Indexar documentos** in the web interface).
+**Index documents** in the web interface).
 
 ---
 
@@ -159,7 +159,7 @@ chat.py             Interactive terminal chat.
 app_web.py          Web interface (Streamlit) with chat and re-indexing.
 requirements.txt    Dependencies for the isolated environment.
 setup.sh            Creates the venv and installs everything.
-documents/          Your sources (includes a sample ejemplo.md).
+documents/          Your sources (includes a sample example.md).
 ```
 
 ---
