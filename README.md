@@ -109,6 +109,12 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
 > The `.venv` virtual environment keeps the dependencies separate from the
 > system, as required by the isolation goal.
 
+> **About INT4 quantization.** The SLM is exported with *data-free* weight-only
+> INT4 (no calibration dataset), so `download_models.py` does not need the
+> `datasets` library. If you prefer data-aware INT4 (slightly better accuracy),
+> run `pip install datasets` and drop the `--group-size/--ratio` flags in
+> `download_models.py`.
+
 ---
 
 ## Usage
