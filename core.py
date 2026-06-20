@@ -1,5 +1,5 @@
-"""Piezas centrales del NotebookLM offline: carga de documentos, embeddings,
-modelo de lenguaje y cadena RAG. Todo se ejecuta en local con OpenVINO.
+"""Core pieces of the offline NotebookLM: document loading, embeddings,
+language model and RAG chain. Everything runs locally with OpenVINO.
 """
 
 from __future__ import annotations
@@ -9,10 +9,11 @@ from pathlib import Path
 import config
 
 
-# --- 1. Carga de documentos --------------------------------------------------
+# --- 1. Document loading -----------------------------------------------------
 def _load_pdf(path: Path) -> list:
-    """Extrae un PDF a Markdown con PyMuPDF4LLM (convierte tablas a Markdown,
-    es C++ y va muy ligero en la N100). Si no está instalado, usa PyPDFLoader.
+    """Extract a PDF to Markdown with PyMuPDF4LLM (it converts tables to
+    Markdown, is C++ and runs very light on the N100). Falls back to
+    PyPDFLoader if it is not installed.
     """
     from langchain_core.documents import Document
 
@@ -28,7 +29,7 @@ def _load_pdf(path: Path) -> list:
 
 
 def load_documents(documents_dir: Path = config.DOCUMENTS_DIR) -> list:
-    """Lee .txt, .md y .pdf de forma recursiva desde la carpeta de documentos."""
+    """Recursively read .txt, .md and .pdf files from the documents folder."""
     from langchain_community.document_loaders import TextLoader
 
     docs = []
@@ -42,7 +43,7 @@ def load_documents(documents_dir: Path = config.DOCUMENTS_DIR) -> list:
 
 
 def split_documents(docs: list) -> list:
-    """Divide los documentos en fragmentos manejables para el RAG."""
+    """Split the documents into manageable chunks for the RAG."""
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 
     splitter = RecursiveCharacterTextSplitter(
@@ -55,7 +56,7 @@ def split_documents(docs: list) -> list:
 
 # --- 2. Embeddings (OpenVINO) ------------------------------------------------
 def get_embeddings():
-    """Embeddings multilingües acelerados con OpenVINO."""
+    """Multilingual embeddings accelerated with OpenVINO."""
     from langchain_community.embeddings import OpenVINOEmbeddings
 
     return OpenVINOEmbeddings(
@@ -65,9 +66,9 @@ def get_embeddings():
     )
 
 
-# --- 3. Modelo de lenguaje (OpenVINO) ----------------------------------------
+# --- 3. Language model (OpenVINO) --------------------------------------------
 def get_llm():
-    """Carga el SLM exportado a OpenVINO y lo envuelve como chat de LangChain."""
+    """Load the SLM exported to OpenVINO and wrap it as a LangChain chat model."""
     from optimum.intel import OVModelForCausalLM
     from transformers import AutoTokenizer, pipeline
     from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
@@ -84,13 +85,13 @@ def get_llm():
         repetition_penalty=1.1,
         return_full_text=False,
     )
-    # ChatHuggingFace aplica la plantilla de chat del modelo (rol system/user).
+    # ChatHuggingFace applies the model's chat template (system/user roles).
     return ChatHuggingFace(llm=HuggingFacePipeline(pipeline=text_pipe))
 
 
-# --- 4. Índice vectorial (FAISS) ---------------------------------------------
+# --- 4. Vector index (FAISS) -------------------------------------------------
 def build_index(chunks: list, embeddings) -> None:
-    """Crea el índice FAISS a partir de los fragmentos y lo guarda en disco."""
+    """Build the FAISS index from the chunks and save it to disk."""
     from langchain_community.vectorstores import FAISS
 
     config.INDEX_DIR.parent.mkdir(parents=True, exist_ok=True)
@@ -99,28 +100,28 @@ def build_index(chunks: list, embeddings) -> None:
 
 
 def load_index(embeddings):
-    """Carga un índice FAISS previamente persistido."""
+    """Load a previously persisted FAISS index."""
     from langchain_community.vectorstores import FAISS
 
     return FAISS.load_local(
         str(config.INDEX_DIR),
         embeddings,
-        allow_dangerous_deserialization=True,  # índice generado localmente por ti
+        allow_dangerous_deserialization=True,  # index generated locally by you
     )
 
 
-# --- 5. Cadena RAG -----------------------------------------------------------
+# --- 5. RAG chain ------------------------------------------------------------
 SYSTEM_PROMPT = (
-    "Eres un asistente que responde EXCLUSIVAMENTE usando la información del "
-    "contexto proporcionado. Si la respuesta no está en el contexto, di "
-    "claramente que no dispones de esa información. Responde en el mismo "
-    "idioma de la pregunta y de forma concisa.\n\n"
-    "Contexto:\n{context}"
+    "You are an assistant that answers EXCLUSIVELY using the information in the "
+    "provided context. If the answer is not in the context, clearly say that "
+    "you do not have that information. Answer in the same language as the "
+    "question and be concise.\n\n"
+    "Context:\n{context}"
 )
 
 
 def build_rag_chain(retriever, llm):
-    """Construye la cadena de recuperación + generación (RAG)."""
+    """Build the retrieval + generation (RAG) chain."""
     from langchain.chains import create_retrieval_chain
     from langchain.chains.combine_documents import create_stuff_documents_chain
     from langchain_core.prompts import ChatPromptTemplate
