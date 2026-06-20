@@ -86,7 +86,12 @@ def get_llm():
         return_full_text=False,
     )
     # ChatHuggingFace applies the model's chat template (system/user roles).
-    return ChatHuggingFace(llm=HuggingFacePipeline(pipeline=text_pipe))
+    # Pass model_id explicitly (the local OpenVINO dir, which already contains
+    # the tokenizer) so it does not try to resolve/download it from the Hub.
+    return ChatHuggingFace(
+        llm=HuggingFacePipeline(pipeline=text_pipe),
+        model_id=str(config.LLM_OV_DIR),
+    )
 
 
 # --- 4. Vector index (FAISS) -------------------------------------------------
