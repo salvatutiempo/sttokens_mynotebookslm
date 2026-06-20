@@ -86,10 +86,11 @@ def get_llm():
         return_full_text=False,
     )
     # ChatHuggingFace applies the model's chat template (system/user roles).
-    # Pass model_id explicitly (the local OpenVINO dir, which already contains
-    # the tokenizer) so it does not try to resolve/download it from the Hub.
+    # Pass model_id (the local OpenVINO dir) and the already-loaded tokenizer so
+    # it never tries to resolve/download anything from the Hub (fully offline).
     return ChatHuggingFace(
         llm=HuggingFacePipeline(pipeline=text_pipe),
+        tokenizer=tokenizer,
         model_id=str(config.LLM_OV_DIR),
     )
 
