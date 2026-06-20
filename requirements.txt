@@ -12,6 +12,9 @@ openvino>=2024.6
 nncf>=2.14            # necesario para la cuantización INT4
 transformers>=4.45,<4.49
 
+# Interfaz web opcional
+streamlit>=1.40
+
 # Almacén vectorial y lectura de PDF
 faiss-cpu>=1.9
 pymupdf4llm>=0.0.17   # PDFs -> Markdown (tablas incluidas), rápido y ligero

@@ -77,7 +77,9 @@ python download_models.py      # descarga y exporta los modelos a OpenVINO (1 ve
    python ingest.py
    ```
 
-3. Pregunta:
+3. Pregunta. Tienes dos interfaces:
+
+   **Terminal:**
 
    ```bash
    python chat.py
@@ -89,7 +91,17 @@ python download_models.py      # descarga y exporta los modelos a OpenVINO (1 ve
    Fuentes: documents/ejemplo.md
    ```
 
-Cada vez que añadas o cambies documentos, vuelve a ejecutar `python ingest.py`.
+   **Web (Streamlit):**
+
+   ```bash
+   streamlit run app_web.py
+   ```
+
+   Abre el navegador en `http://localhost:8501`, con chat y un botón para
+   reindexar documentos desde la propia interfaz.
+
+Cada vez que añadas o cambies documentos, vuelve a ejecutar `python ingest.py`
+(o pulsa **Indexar documentos** en la interfaz web).
 
 ---
 
@@ -101,6 +113,7 @@ core.py             Lógica RAG: carga, embeddings, SLM, FAISS y cadena.
 download_models.py  Exporta SLM (INT4) y embeddings a OpenVINO. Una sola vez.
 ingest.py           Indexa documents/ en el índice FAISS.
 chat.py             Chat interactivo por terminal.
+app_web.py          Interfaz web (Streamlit) con chat y reindexado.
 requirements.txt    Dependencias del entorno aislado.
 setup.sh            Crea el venv e instala todo.
 documents/          Tus fuentes (incluye un ejemplo.md de prueba).
