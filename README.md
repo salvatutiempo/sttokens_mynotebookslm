@@ -187,6 +187,23 @@ documents/          Your sources (includes a sample example.md).
 
 ---
 
+## Troubleshooting
+
+- **`download_models.py` is killed (`SIGKILL` / signal 9) during "Applying
+  Weight Compression".** This is the OOM killer: exporting/quantizing the model
+  briefly needs several GB of RAM (much more than *running* it). Options:
+  - Add temporary swap on the device and retry:
+    ```bash
+    rm -rf models/llm-ov-int4
+    fallocate -l 8G /swapfile && chmod 600 /swapfile
+    mkswap /swapfile && swapon /swapfile
+    python download_models.py
+    ```
+  - Or export on a machine with more RAM and copy the `models/` folder over
+    (the N100 only needs the final IR to *run*).
+  - Or use a smaller SLM in `config.py` (e.g. `Qwen/Qwen2.5-0.5B-Instruct`).
+  - Always delete a partial `models/llm-ov-int4` before retrying.
+
 ## Notes and limitations
 
 - The **first answer** is slower because the model is loaded into memory.
