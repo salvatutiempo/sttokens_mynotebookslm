@@ -1,0 +1,13 @@
+# Entorno e instalación
+.venv/
+__pycache__/
+*.pyc
+
+# Modelos y datos generados (pesados, se regeneran con los scripts)
+models/
+storage/
+
+# Documentos del usuario (no se versionan, salvo el ejemplo)
+documents/*
+!documents/.gitkeep
+!documents/ejemplo.md

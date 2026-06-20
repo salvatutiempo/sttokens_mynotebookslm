@@ -1,0 +1,21 @@
+# NotebookLM offline para Intel N100 — entorno aislado (ver setup.sh)
+# Pines amplios pero compatibles entre sí (LangChain 0.3 + Optimum-Intel + OpenVINO).
+
+langchain>=0.3,<0.4
+langchain-community>=0.3,<0.4
+langchain-huggingface>=0.1,<0.3
+langchain-text-splitters>=0.3,<0.4
+
+# OpenVINO + exportación/cuantización de modelos
+optimum-intel[openvino]>=1.21
+openvino>=2024.6
+nncf>=2.14            # necesario para la cuantización INT4
+transformers>=4.45,<4.49
+
+# Interfaz web opcional
+streamlit>=1.40
+
+# Almacén vectorial y lectura de PDF
+faiss-cpu>=1.9
+pymupdf4llm>=0.0.17   # PDFs -> Markdown (tablas incluidas), rápido y ligero
+pypdf>=5.0            # respaldo si PyMuPDF4LLM no está disponible
