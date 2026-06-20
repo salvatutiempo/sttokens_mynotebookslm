@@ -187,6 +187,37 @@ documents/          Your sources (includes a sample example.md).
 
 ---
 
+## Troubleshooting
+
+- **`RuntimeError: basic_ios::clear: iostream error` while exporting.** A write
+  failed. The export writes a temporary model (~3 GB) under `/tmp`, and on many
+  NAS/Proxmox systems **`/tmp` is a RAM-backed `tmpfs`** (check with `df -hT`):
+  it overflows and, since it lives in RAM, it also worsens out-of-memory. Point
+  `TMPDIR` to a real disk that has space:
+  ```bash
+  rm -rf models/llm-ov-int4
+  mkdir -p /root/tmp && export TMPDIR=/root/tmp
+  python download_models.py
+  ```
+  If instead the **system disk itself** is small, move the cache and models to a
+  big volume: `export HF_HOME=/big/hf-cache` and
+  `export NOTEBOOKLM_MODELS_DIR=/big/models`.
+
+- **`download_models.py` is killed (`SIGKILL` / signal 9) during "Applying
+  Weight Compression".** This is the OOM killer: exporting/quantizing the model
+  briefly needs several GB of RAM (much more than *running* it). Options:
+  - Add temporary swap on the device and retry:
+    ```bash
+    rm -rf models/llm-ov-int4
+    fallocate -l 8G /swapfile && chmod 600 /swapfile
+    mkswap /swapfile && swapon /swapfile
+    python download_models.py
+    ```
+  - Or export on a machine with more RAM and copy the `models/` folder over
+    (the N100 only needs the final IR to *run*).
+  - Or use a smaller SLM in `config.py` (e.g. `Qwen/Qwen2.5-0.5B-Instruct`).
+  - Always delete a partial `models/llm-ov-int4` before retrying.
+
 ## Notes and limitations
 
 - The **first answer** is slower because the model is loaded into memory.

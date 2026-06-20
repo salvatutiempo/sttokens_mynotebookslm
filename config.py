@@ -4,12 +4,15 @@ A single place to tune models, paths and RAG parameters.
 Targeted at an Intel N100 (4 cores, no dedicated GPU, 8-16 GB of RAM).
 """
 
+from os import environ
 from pathlib import Path
 
 # --- Paths -------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 DOCUMENTS_DIR = BASE_DIR / "documents"            # your .txt, .md and .pdf files
-MODELS_DIR = BASE_DIR / "models"                  # models exported to OpenVINO
+# Models can be large; on a NAS (small system disk) point this to a big volume
+# with:  export NOTEBOOKLM_MODELS_DIR=/mnt/pool/models
+MODELS_DIR = Path(environ.get("NOTEBOOKLM_MODELS_DIR", BASE_DIR / "models"))
 INDEX_DIR = BASE_DIR / "storage" / "faiss_index"  # persistent vector index
 
 # --- Language model (SLM) ----------------------------------------------------
