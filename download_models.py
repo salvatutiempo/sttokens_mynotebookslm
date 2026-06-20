@@ -14,7 +14,9 @@ import config
 
 
 def export(model_id: str, out_dir, extra_args: list[str]) -> None:
-    if out_dir.exists():
+    # Check for the actual exported model, not just the folder, so a partial
+    # or failed previous export is not mistaken for a finished one.
+    if (out_dir / "openvino_model.xml").exists():
         print(f"[=] Already exists, skipping: {out_dir}")
         return
     out_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -30,10 +32,18 @@ def export(model_id: str, out_dir, extra_args: list[str]) -> None:
 
 def main() -> int:
     # SLM quantized to INT4 (weights ~1 GB for Qwen2.5-1.5B).
+    # Data-free weight-only quantization (explicit --group-size/--ratio): no
+    # calibration dataset, so it does not require the `datasets` library and is
+    # faster/lighter. Quality is more than enough for SLM-based RAG.
     export(
         config.LLM_MODEL_ID,
         config.LLM_OV_DIR,
-        ["--weight-format", "int4", "--task", "text-generation-with-past"],
+        [
+            "--weight-format", "int4",
+            "--group-size", "128",
+            "--ratio", "1.0",
+            "--task", "text-generation-with-past",
+        ],
     )
     # Embeddings (feature-extraction), default precision.
     export(
