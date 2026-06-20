@@ -1,83 +1,126 @@
-# NotebookLM offline en un Intel N100
+# Offline NotebookLM on an Intel N100
 
-Un clon mínimo y local de NotebookLM: haz preguntas en lenguaje natural sobre
-tus propios documentos (**texto, Markdown y PDF**) **sin conexión a internet**,
-usando un modelo de lenguaje pequeño (**SLM**) acelerado con **OpenVINO** sobre
-un **Intel N100**. Todo orquestado con **LangChain** mediante un patrón RAG
-(*Retrieval-Augmented Generation*).
+A minimal, fully local NotebookLM clone: ask natural-language questions about
+your own documents (**text, Markdown and PDF**) **without an internet
+connection**, using a small language model (**SLM**) accelerated with
+**OpenVINO** on an **Intel N100**. Everything is orchestrated with **LangChain**
+using a RAG (*Retrieval-Augmented Generation*) pattern.
 
-> Tras la descarga inicial de los modelos, el sistema funciona 100% offline.
-> Tus documentos nunca salen del equipo.
-
----
-
-## ¿Por qué estas elecciones?
-
-| Pieza | Elección | Motivo |
-|-------|----------|--------|
-| **SLM** | `Qwen2.5-1.5B-Instruct` (INT4) | Reciente, multilingüe (buen español) y ~1 GB en INT4: cabe holgado en la N100. |
-| **Aceleración** | **OpenVINO** | Es el runtime de Intel; exprime los 4 núcleos (y opcionalmente la iGPU) de la N100. |
-| **Embeddings** | `multilingual-e5-small` | Ligero (~118 M) y multilingüe, también vía OpenVINO. |
-| **Vector store** | **FAISS** | Local, sin servidor, sin dependencias externas. |
-| **Orquestación** | **LangChain** | Conecta carga de documentos, recuperación y generación con poco código. |
-
-El **Intel N100** es una CPU de 6 W con 4 núcleos sin GPU dedicada. La clave
-para que un LLM sea usable es: **modelo pequeño + cuantización INT4 + OpenVINO**.
-
-Los PDFs se extraen con **PyMuPDF4LLM**, que convierte incluso las **tablas a
-Markdown** (en C++, rápido y con poca RAM); si no está instalado, se recurre a
-`PyPDFLoader`.
-
-> **Nota de diseño.** A diferencia de los enfoques habituales (Ollama o
-> llama.cpp con modelos GGUF, que solo usan OpenVINO para los *embeddings* o
-> como backend opcional), aquí **el propio SLM se ejecuta sobre OpenVINO** vía
-> `optimum-intel` en INT4. Así se exprime el runtime de Intel de extremo a
-> extremo, que es justo el objetivo en una N100.
+> After the initial one-time model download, the system runs 100% offline.
+> Your documents never leave the machine.
 
 ---
 
-## Arquitectura (RAG en una frase)
+## Why these choices?
+
+| Piece | Choice | Reason |
+|-------|--------|--------|
+| **SLM** | `Qwen2.5-1.5B-Instruct` (INT4) | Recent, multilingual (good Spanish) and ~1 GB in INT4: fits comfortably on the N100. |
+| **Acceleration** | **OpenVINO** | Intel's runtime; squeezes the 4 cores (and optionally the iGPU) of the N100. |
+| **Embeddings** | `multilingual-e5-small` | Lightweight (~118 M) and multilingual, also via OpenVINO. |
+| **Vector store** | **FAISS** | Local, server-less, no external dependencies. |
+| **Orchestration** | **LangChain** | Wires document loading, retrieval and generation with little code. |
+
+The **Intel N100** is a 6 W, 4-core CPU with no dedicated GPU. The key to making
+an LLM usable is: **small model + INT4 quantization + OpenVINO**.
+
+PDFs are extracted with **PyMuPDF4LLM**, which converts even **tables to
+Markdown** (in C++, fast and light on RAM); if it is not installed, the code
+falls back to `PyPDFLoader`.
+
+> **Design note.** Unlike the usual approaches (Ollama or llama.cpp with GGUF
+> models, where OpenVINO is used only for the *embeddings* or as an optional
+> backend), here **the SLM itself runs on OpenVINO** through `optimum-intel` in
+> INT4. This uses Intel's runtime end to end, which is exactly the goal on an
+> N100.
+
+---
+
+## What runs what? (engine and models)
+
+This is the most common point of confusion if you come from Ollama, so let's be
+explicit.
+
+### The engine: OpenVINO (not Ollama, not llama.cpp)
+
+The SLM is **not** run by Ollama or llama.cpp. It is loaded and executed by the
+**OpenVINO Runtime**, called from Python. The chain of pieces is:
 
 ```
-documentos (.txt/.md/.pdf)
+LangChain  →  optimum-intel (OVModelForCausalLM)  →  OpenVINO Runtime  →  N100 CPU/iGPU
+(orchestrates)      (loads the model)                   (does the math)
+```
+
+Key differences vs. an Ollama / llama.cpp setup:
+
+| | Ollama / llama.cpp | **This project** |
+|---|---|---|
+| Engine that runs the SLM | Ollama or llama.cpp | **OpenVINO** (via `optimum-intel`) |
+| Model format | GGUF (`.gguf`) | **OpenVINO IR** (`.xml` + `.bin`) |
+| Separate server process? | Yes (`ollama serve` / `llama-server`) | **No** — the model loads inside the Python process |
+| Who prepares it | you `ollama pull` | `download_models.py` exports to IR |
+
+There is **no Ollama and no llama.cpp** anywhere in `requirements.txt`.
+
+### The models: two of them (a RAG always needs two)
+
+They do two different jobs:
+
+| Model | Job | Used here | Size |
+|-------|-----|-----------|------|
+| **Embeddings** | Turns text into vectors to **search** for the relevant chunk | `multilingual-e5-small` | ~118 M (~120 MB) |
+| **SLM (LLM)** | **Writes the answer** from the retrieved chunks | `Qwen2.5-1.5B-Instruct` | ~1 GB in INT4 |
+
+Think of it as a library: the **embeddings** model is the *librarian* that finds
+the right page; the **SLM** is the one that reads that page and writes your
+answer. That is why `download_models.py` downloads **two** things (you will see
+two folders under `models/`: `llm-ov-int4` and `embed-ov`), and **both run on
+OpenVINO**.
+
+---
+
+## Architecture (RAG in one picture)
+
+```
+documents (.txt/.md/.pdf)
         │  ingest.py
         ▼
-  fragmentos ──► embeddings (OpenVINO) ──► índice FAISS  (en disco)
-                                               │
-pregunta ──► embedding ──► recupera K fragmentos relevantes
-                                               │
-                       ┌───────────────────────┘
-                       ▼
-        SLM (Qwen2.5 INT4, OpenVINO) ──► respuesta + fuentes
+  chunks ──► embeddings (OpenVINO) ──► FAISS index  (on disk)
+                                            │
+question ──► embedding ──► retrieve top-K relevant chunks
+                                            │
+                    ┌───────────────────────┘
+                    ▼
+        SLM (Qwen2.5 INT4, OpenVINO) ──► answer + sources
 ```
 
 ---
 
-## Instalación (entorno aislado)
+## Installation (isolated environment)
 
-Requisitos: Python 3.10+ y conexión a internet **solo** la primera vez.
+Requirements: Python 3.10+ and an internet connection **only** the first time.
 
 ```bash
-bash setup.sh                  # crea .venv e instala todo de forma aislada
+bash setup.sh                  # creates .venv and installs everything in isolation
 source .venv/bin/activate
-python download_models.py      # descarga y exporta los modelos a OpenVINO (1 vez)
+python download_models.py      # downloads and exports the models to OpenVINO (once)
 ```
 
-> El entorno virtual `.venv` mantiene las dependencias separadas del sistema,
-> tal y como pedía el requisito de aislamiento.
+> The `.venv` virtual environment keeps the dependencies separate from the
+> system, as required by the isolation goal.
 
 ---
 
-## Uso
+## Usage
 
-1. Pon tus documentos en `documents/` (`.txt`, `.md`, `.pdf`).
-2. Indexa:
+1. Drop your documents into `documents/` (`.txt`, `.md`, `.pdf`).
+2. Index them:
 
    ```bash
    python ingest.py
    ```
 
-3. Pregunta. Tienes dos interfaces:
+3. Ask. There are two interfaces:
 
    **Terminal:**
 
@@ -86,9 +129,9 @@ python download_models.py      # descarga y exporta los modelos a OpenVINO (1 ve
    ```
 
    ```
-   Tú > ¿En qué año se fundó Vinotopía?
-   IA  > Según el documento, en el año 2026.
-   Fuentes: documents/ejemplo.md
+   You > In what year was Vinotopía founded?
+   AI  > According to the document, in the year 2026.
+   Sources: documents/ejemplo.md
    ```
 
    **Web (Streamlit):**
@@ -97,52 +140,59 @@ python download_models.py      # descarga y exporta los modelos a OpenVINO (1 ve
    streamlit run app_web.py
    ```
 
-   Abre el navegador en `http://localhost:8501`, con chat y un botón para
-   reindexar documentos desde la propia interfaz.
+   Open `http://localhost:8501` in your browser: a chat plus a button to
+   re-index documents from the interface itself.
 
-Cada vez que añadas o cambies documentos, vuelve a ejecutar `python ingest.py`
-(o pulsa **Indexar documentos** en la interfaz web).
+Whenever you add or change documents, run `python ingest.py` again (or click
+**Indexar documentos** in the web interface).
 
 ---
 
-## Estructura del proyecto
+## Project layout
 
 ```
-config.py           Parámetros: modelos, rutas, chunking, dispositivo.
-core.py             Lógica RAG: carga, embeddings, SLM, FAISS y cadena.
-download_models.py  Exporta SLM (INT4) y embeddings a OpenVINO. Una sola vez.
-ingest.py           Indexa documents/ en el índice FAISS.
-chat.py             Chat interactivo por terminal.
-app_web.py          Interfaz web (Streamlit) con chat y reindexado.
-requirements.txt    Dependencias del entorno aislado.
-setup.sh            Crea el venv e instala todo.
-documents/          Tus fuentes (incluye un ejemplo.md de prueba).
+config.py           Parameters: models, paths, chunking, device.
+core.py             RAG logic: loading, embeddings, SLM, FAISS and chain.
+download_models.py  Exports the SLM (INT4) and embeddings to OpenVINO. Once.
+ingest.py           Indexes documents/ into the FAISS index.
+chat.py             Interactive terminal chat.
+app_web.py          Web interface (Streamlit) with chat and re-indexing.
+requirements.txt    Dependencies for the isolated environment.
+setup.sh            Creates the venv and installs everything.
+documents/          Your sources (includes a sample ejemplo.md).
 ```
 
 ---
 
-## Personalización rápida (`config.py`)
+## Quick customization (`config.py`)
 
-- **Más calidad**: `LLM_MODEL_ID = "meta-llama/Llama-3.2-3B-Instruct"` (más lento).
-- **Más ligereza/velocidad**: `LLM_MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"`.
-- **Probar la iGPU**: `DEVICE = "GPU"` (o `"AUTO"`).
-- **Respuestas más largas/cortas**: ajusta `MAX_NEW_TOKENS`.
-- **Recuperar más contexto**: sube `RETRIEVER_K` (a costa de velocidad).
+- **Higher quality**: `LLM_MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"` (recommended on
+  a 16 GB N100; slower but more accurate, less hallucination).
+- **Lighter / faster**: `LLM_MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"`.
+- **Try the iGPU**: `DEVICE = "GPU"` (or `"AUTO"`).
+- **Longer/shorter answers**: tune `MAX_NEW_TOKENS`.
+- **Retrieve more context**: raise `RETRIEVER_K` (at the cost of speed).
 
----
-
-## Notas y limitaciones
-
-- La **primera respuesta** es más lenta porque carga el modelo en memoria.
-- En INT4 sobre N100, espera del orden de unos pocos *tokens/segundo*: perfecto
-  para consultas, no para generar textos largos.
-- Es un RAG sencillo (sin memoria conversacional ni reranking) **a propósito**:
-  el objetivo es que sea mínimo, limpio y fácil de entender para el blog.
-- PDFs escaneados (imágenes) no se leen: necesitarían OCR.
+> **Which SLM should I pick?** On an **8 GB** N100, stick with the default
+> `Qwen2.5-1.5B-Instruct` (snappy, ~8-14 tok/s). On a **16 GB** N100, prefer
+> `Qwen2.5-3B-Instruct`: it follows "answer only from the context" more
+> reliably and hallucinates less, at ~3-6 tok/s. Changing the embeddings model
+> is independent and only affects search quality, not the wording of answers.
 
 ---
 
-## Licencia
+## Notes and limitations
 
-Código de ejemplo de uso libre. Los modelos descargados conservan sus
-respectivas licencias (Qwen, e5).
+- The **first answer** is slower because the model is loaded into memory.
+- In INT4 on the N100, expect a few *tokens/second*: great for Q&A, not for
+  generating long essays.
+- This is a deliberately **simple** RAG (no conversational memory, no reranking):
+  the goal is to keep it minimal, clean and easy to follow for the blog.
+- Scanned PDFs (images) are not read: they would need OCR.
+
+---
+
+## License
+
+Free-to-use example code. Downloaded models keep their respective licenses
+(Qwen, e5).
