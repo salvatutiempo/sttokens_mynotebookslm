@@ -95,9 +95,16 @@ SYSTEM_PROMPT = (
     "You are an assistant that answers EXCLUSIVELY using the information in the "
     "provided context. If the answer is not in the context, clearly say that "
     "you do not have that information. Answer in the same language as the "
-    "question and be concise.\n\n"
+    "question. Give a COMPLETE, self-contained answer in at most {max_words} "
+    "words: prioritise the most important points and ALWAYS finish your "
+    "sentences — never stop mid-sentence.\n\n"
     "Context:\n{context}"
 )
+
+
+def _word_budget() -> int:
+    """Word budget for the answer, derived from the token cap (see config)."""
+    return max(40, int(config.MAX_NEW_TOKENS * config.ANSWER_WORD_RATIO))
 
 
 class ChatLLM:
@@ -127,7 +134,12 @@ class ChatLLM:
 
     def _build_inputs(self, question: str, context: str):
         messages = [
-            {"role": "system", "content": SYSTEM_PROMPT.format(context=context)},
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT.format(
+                    context=context, max_words=_word_budget()
+                ),
+            },
             {"role": "user", "content": question},
         ]
         text = self.tokenizer.apply_chat_template(
@@ -141,6 +153,7 @@ class ChatLLM:
             max_new_tokens=config.MAX_NEW_TOKENS,
             do_sample=False,
             repetition_penalty=1.1,
+            no_repeat_ngram_size=config.NO_REPEAT_NGRAM,
             pad_token_id=self.tokenizer.eos_token_id,
         )
         if streamer is not None:
