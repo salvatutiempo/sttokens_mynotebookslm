@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Reducción de contexto antes y después">
+  <defs>
+    <filter id="cr-sh" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#7a7264" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="#ece4d6"/>
+  <path d="M1175 120 a92 92 0 1 0 30 72" fill="none" stroke="#ddd2bd" stroke-width="9" stroke-linecap="round" opacity="0.4"/>
+
+  <text x="80" y="112" fill="#4a463f" font-family="Georgia, 'Times New Roman', serif" font-size="38">Reducción de contexto</text>
+  <line x1="82" y1="132" x2="220" y2="132" stroke="#b98b6e" stroke-width="2"/>
+  <text x="82" y="164" fill="#8a8273" font-family="Georgia, serif" font-size="17" font-style="italic">Quitar ruido antes de llamar al modelo caro</text>
+
+  <line x1="200" y1="566" x2="1120" y2="566" stroke="#cabfa9" stroke-width="1.5"/>
+
+  <!-- antes -->
+  <rect x="300" y="226" width="240" height="340" rx="10" fill="#c4906f" filter="url(#cr-sh)"/>
+  <rect x="300" y="226" width="240" height="28" rx="10" fill="#ffffff" opacity="0.12"><animate attributeName="opacity" values="0.16;0.04;0.16" dur="5s" repeatCount="indefinite"/></rect>
+  <text x="420" y="204" fill="#a06a4d" font-family="Georgia, serif" font-size="28" text-anchor="middle">9.800 tk</text>
+  <text x="420" y="602" fill="#4a463f" font-family="Georgia, serif" font-size="22" text-anchor="middle">Antes</text>
+  <text x="420" y="630" fill="#8a8273" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="middle">logs + firmas + duplicados</text>
+
+  <!-- después -->
+  <rect x="800" y="390" width="240" height="176" rx="10" fill="#93a17d" filter="url(#cr-sh)"/>
+  <text x="920" y="368" fill="#5f6e48" font-family="Georgia, serif" font-size="28" text-anchor="middle">5.100 tk</text>
+  <text x="920" y="602" fill="#4a463f" font-family="Georgia, serif" font-size="22" text-anchor="middle">Después</text>
+  <text x="920" y="630" fill="#8a8273" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="middle">resumen operativo limpio</text>
+
+  <!-- badge reducción -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -8;0 0" dur="5s" repeatCount="indefinite"/>
+    <rect x="566" y="316" width="244" height="116" rx="16" fill="#efe6d2" stroke="#dcc89a" stroke-width="1.4" filter="url(#cr-sh)"/>
+    <text x="688" y="356" fill="#8a6d31" font-family="Georgia, serif" font-size="19" font-style="italic" text-anchor="middle">reducción</text>
+    <text x="688" y="406" fill="#7a6231" font-family="Georgia, serif" font-size="44" text-anchor="middle">−48 %</text>
+  </g>
+</svg>

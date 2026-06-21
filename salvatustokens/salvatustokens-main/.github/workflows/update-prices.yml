@@ -1,0 +1,38 @@
+name: Update model prices
+
+on:
+  schedule:
+    # Cada lunes a las 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Refresh prices from LiteLLM dataset
+        run: python scripts/update_prices.py
+
+      - name: Commit updated prices
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- static/data/models.json; then
+            echo "Sin cambios que commitear."
+          else
+            git add static/data/models.json
+            git commit -m "chore: actualiza precios de modelos ($(date -u +%F))"
+            git push
+          fi

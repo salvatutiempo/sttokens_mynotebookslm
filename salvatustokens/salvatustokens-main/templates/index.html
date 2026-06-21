@@ -1,0 +1,145 @@
+$nav
+<main>
+  <section class="hero">
+    <canvas class="neural-canvas" data-neural-canvas aria-hidden="true"></canvas>
+    <div class="hero__content" data-animate>
+      <p class="eyebrow">$eyebrow</p>
+      <h1>salvatustokens</h1>
+      <p class="hero__lead">$hero_lead</p>
+      <div class="hero__actions">
+        <a class="button button--primary" href="$guide_path">$primary_cta</a>
+        <a class="button button--ghost" href="$articles_path">$secondary_cta</a>
+      </div>
+    </div>
+    <div class="hero__visual" aria-label="$visual_label" data-animate>
+      <div class="ai-console" data-tilt-card>
+        <div class="ai-console__bar"><span></span><span></span><span></span></div>
+        <div class="ai-console__grid">
+          <div class="ai-chip ai-chip--local">
+            <span>$local</span>
+            <strong>$local_desc</strong>
+          </div>
+          <img src="/static/assets/salvatustokens-icon.svg" alt="">
+          <div class="ai-chip ai-chip--paid">
+            <span>$paid</span>
+            <strong>$paid_desc</strong>
+          </div>
+        </div>
+        <div class="token-flow" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="savings-meter">
+          <span>$saving_estimate</span>
+          <strong>42%</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust-strip" aria-label="Principios">
+    <span>$strip_1</span>
+    <span>$strip_2</span>
+    <span>$strip_3</span>
+    <span>$strip_4</span>
+  </section>
+
+  <section class="section" id="metodo">
+    <div class="section__header" data-animate>
+      <p class="eyebrow">$method_eyebrow</p>
+      <h2>$method_title</h2>
+      <p>$method_text</p>
+    </div>
+    <div class="method-grid">
+      <article data-animate>
+        <span>01</span>
+        <h3>$reduce</h3>
+        <p>$reduce_text</p>
+      </article>
+      <article data-animate>
+        <span>02</span>
+        <h3>$split</h3>
+        <p>$split_text</p>
+      </article>
+      <article data-animate>
+        <span>03</span>
+        <h3>$measure</h3>
+        <p>$measure_text</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section--split" id="calculadora">
+    <div data-animate>
+      <p class="eyebrow">$calc_eyebrow</p>
+      <h2>$calc_title</h2>
+      <p>$calc_text</p>
+    </div>
+    <form class="calculator" data-calculator data-animate>
+      <label>
+        $input_tokens
+        <input type="number" min="0" step="1000" name="inputTokens" value="3000000">
+      </label>
+      <label>
+        $output_tokens
+        <input type="number" min="0" step="1000" name="outputTokens" value="600000">
+      </label>
+      <label>
+        $input_price
+        <input type="number" min="0" step="0.01" name="inputPrice" value="3">
+      </label>
+      <label>
+        $output_price
+        <input type="number" min="0" step="0.01" name="outputPrice" value="15">
+      </label>
+      <label>
+        $local_share
+        <input type="range" min="0" max="90" step="5" name="localShare" value="35">
+        <output data-local-share>35%</output>
+      </label>
+      <div class="calculator__result" aria-live="polite">
+        <span>$monthly_saving</span>
+        <strong data-savings>0 EUR</strong>
+        <small data-before-after></small>
+      </div>
+      <a class="calculator__link" href="$calculator_path">$calc_full_button</a>
+    </form>
+  </section>
+
+  <section class="section section--contrast">
+    <div class="section__header" data-animate>
+      <p class="eyebrow">$routes_eyebrow</p>
+      <h2>$routes_title</h2>
+    </div>
+    <div class="route-grid">
+      <a href="$guide_path#inventario" data-animate>
+        <strong>$route_1</strong>
+        <span>$route_1_text</span>
+      </a>
+      <a href="$guide_path#local" data-animate>
+        <strong>$route_2</strong>
+        <span>$route_2_text</span>
+      </a>
+      <a href="$guide_path#pago" data-animate>
+        <strong>$route_3</strong>
+        <span>$route_3_text</span>
+      </a>
+      <a href="$guide_path#plantillas" data-animate>
+        <strong>$route_4</strong>
+        <span>$route_4_text</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section__header section__header--row" data-animate>
+      <div>
+        <p class="eyebrow">$blog_eyebrow</p>
+        <h2>$latest</h2>
+      </div>
+      <a class="text-link" href="$articles_path">$view_all</a>
+    </div>
+    <div class="posts-grid">
+      $latest_posts
+    </div>
+  </section>
+</main>

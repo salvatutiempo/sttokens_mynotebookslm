@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Terminal installing Ollama and starting Qwen 3 locally">
+  <defs>
+    <filter id="zsh2" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#5c5648" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="#ece4d6"/>
+  <path d="M150 130 a90 90 0 1 0 30 70" fill="none" stroke="#ddd2bd" stroke-width="8" stroke-linecap="round" opacity="0.45"/>
+
+  <rect x="96" y="72" width="1088" height="576" rx="20" fill="#3f3c35" stroke="#524d44" stroke-width="1.2" filter="url(#zsh2)"/>
+  <circle cx="132" cy="108" r="6" fill="#bf7e63"/>
+  <circle cx="156" cy="108" r="6" fill="#c7a35e"/>
+  <circle cx="180" cy="108" r="6" fill="#93a17d"/>
+  <text x="216" y="114" fill="#8f897c" font-family="'Courier New', monospace" font-size="16">salvatustokens — your AI running locally</text>
+  <line x1="96" y1="132" x2="1184" y2="132" stroke="#4b463d" stroke-width="1.2"/>
+
+  <g font-family="'Courier New', monospace" font-size="20">
+    <text x="132" y="184" fill="#9bb07f">$</text>
+    <text x="158" y="184" fill="#e7e0cf">ollama run qwen3:8b</text>
+    <text x="158" y="220" fill="#8f897c">pulling manifest</text>
+    <text x="158" y="252" fill="#8f897c">pulling 2bada8a74506</text>
+
+    <rect x="470" y="238" width="280" height="12" rx="6" fill="#4b463d"/>
+    <rect x="470" y="238" width="280" height="12" rx="6" fill="#9bb07f"/>
+    <rect x="470" y="238" width="56" height="12" rx="6" fill="#c4d3a8">
+      <animate attributeName="x" values="470;694;470" dur="3.4s" repeatCount="indefinite"/>
+    </rect>
+    <text x="770" y="252" fill="#9bb07f">5.2 GB</text>
+
+    <text x="158" y="292" fill="#8f897c">verifying sha256 digest</text>
+    <text x="158" y="324" fill="#9bb07f">success</text>
+
+    <text x="158" y="378" fill="#cda06f">&gt;&gt;&gt; Hi, who are you and where do you run?</text>
+    <text x="158" y="424" fill="#e7e0cf">I'm Qwen 3, a language model, and I'm running</text>
+    <text x="158" y="456" fill="#e7e0cf">locally, on your own machine. I don't send</text>
+    <text x="158" y="488" fill="#e7e0cf">anything to the internet: it all stays here.</text>
+    <text x="158" y="520" fill="#e7e0cf">How can I help?</text>
+    <text x="158" y="568" fill="#8f897c">total duration: 1.84s</text>
+    <text x="158" y="600" fill="#9bb07f">cost of this answer: €0.00</text>
+
+    <text x="158" y="636" fill="#cda06f">&gt;&gt;&gt;</text>
+    <rect x="196" y="621" width="12" height="20" fill="#e7e0cf">
+      <animate attributeName="opacity" values="1;0;1" dur="1.4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>

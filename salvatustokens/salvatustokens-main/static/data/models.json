@@ -1,0 +1,71 @@
+{
+  "updated": "2026-06-17",
+  "source": "https://github.com/BerriAI/litellm (model_prices_and_context_window.json)",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "models": [
+    {
+      "name": "GPT-5.4 Pro",
+      "provider": "OpenAI",
+      "context": "256K",
+      "input": 30,
+      "output": 180,
+      "litellm": "gpt-5.4-pro",
+      "note": { "es": "Razonamiento frontera", "en": "Frontier reasoning" }
+    },
+    {
+      "name": "Claude Opus 4.7",
+      "provider": "Anthropic",
+      "context": "200K",
+      "input": 5,
+      "output": 25,
+      "litellm": "claude-opus-4-7",
+      "note": { "es": "Calidad premium", "en": "Premium quality" }
+    },
+    {
+      "name": "GPT-5.4",
+      "provider": "OpenAI",
+      "context": "256K",
+      "input": 2.5,
+      "output": 15,
+      "litellm": "gpt-5.4",
+      "note": { "es": "Estándar potente", "en": "Strong standard" }
+    },
+    {
+      "name": "Claude Sonnet 4.6",
+      "provider": "Anthropic",
+      "context": "200K",
+      "input": 3,
+      "output": 15,
+      "litellm": "claude-sonnet-4-6",
+      "note": { "es": "Equilibrado", "en": "Balanced" }
+    },
+    {
+      "name": "Gemini 3.5 Flash",
+      "provider": "Google",
+      "context": "1M",
+      "input": 1.5,
+      "output": 9,
+      "litellm": "gemini-3.5-flash",
+      "note": { "es": "Barato y rápido", "en": "Cheap and fast" }
+    },
+    {
+      "name": "DeepSeek V3.2",
+      "provider": "DeepSeek",
+      "context": "128K",
+      "input": 0.28,
+      "output": 0.4,
+      "litellm": "deepseek/deepseek-v3.2",
+      "note": { "es": "Ultra económico", "en": "Ultra cheap" }
+    },
+    {
+      "name": { "es": "IA local (Ollama)", "en": "Local AI (Ollama)" },
+      "provider": { "es": "Local", "en": "Local" },
+      "context": { "es": "Depende", "en": "It depends" },
+      "input": 0,
+      "output": 0,
+      "local": true,
+      "note": { "es": "Coste API cero; cuenta luz y hardware", "en": "Zero API cost; consider power and hardware" }
+    }
+  ]
+}

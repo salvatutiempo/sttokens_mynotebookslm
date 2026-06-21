@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Interfaz tipo Open WebUI con una colección de documentos cargada en local">
+  <defs>
+    <filter id="ow-sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#5c5648" flood-opacity="0.16"/>
+    </filter>
+    <filter id="ow-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#7a7264" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="#ece4d6"/>
+
+  <rect x="40" y="40" width="1200" height="640" rx="20" fill="#f6f1e8" stroke="#dcd3c2" stroke-width="1.2" filter="url(#ow-sh)"/>
+  <rect x="40" y="40" width="1200" height="50" rx="20" fill="#efe8da"/>
+  <rect x="40" y="74" width="1200" height="16" fill="#efe8da"/>
+  <circle cx="72" cy="65" r="6" fill="#bf7e63"/>
+  <circle cx="96" cy="65" r="6" fill="#c7a35e"/>
+  <circle cx="120" cy="65" r="6" fill="#93a17d"/>
+  <text x="158" y="71" fill="#9a9182" font-family="'Courier New', monospace" font-size="15">localhost:3000 — Open WebUI</text>
+  <line x1="40" y1="90" x2="1240" y2="90" stroke="#dcd3c2" stroke-width="1.2"/>
+
+  <!-- sidebar colecciones -->
+  <line x1="332" y1="90" x2="332" y2="680" stroke="#dcd3c2" stroke-width="1.2"/>
+  <text x="72" y="138" fill="#6f7d5c" font-family="Georgia, serif" font-size="20">Colecciones</text>
+  <g font-family="'Courier New', monospace" font-size="15">
+    <rect x="64" y="160" width="248" height="42" rx="12" fill="#eef0e4" stroke="#c2cdac" stroke-width="1"/>
+    <text x="86" y="186" fill="#5f6e48">Contratos</text>
+    <text x="86" y="240" fill="#9a9182">Manuales internos</text>
+    <text x="86" y="290" fill="#9a9182">Facturas 2025</text>
+    <text x="86" y="340" fill="#9a9182">Documentación TI</text>
+  </g>
+  <rect x="64" y="606" width="248" height="46" rx="13" fill="#93a17d">
+    <animate attributeName="opacity" values="1;0.82;1" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <text x="96" y="635" fill="#f5f2e8" font-family="Georgia, serif" font-size="16">+ Subir documentos</text>
+
+  <!-- panel principal -->
+  <g font-family="Helvetica, Arial, sans-serif">
+    <text x="372" y="142" fill="#4a463f" font-family="Georgia, serif" font-size="22">Modelo qwen3:8b · Colección: Contratos</text>
+
+    <rect x="700" y="180" width="500" height="60" rx="18" fill="#f0e6d9" stroke="#e0d2c0" stroke-width="1.2"/>
+    <text x="724" y="216" fill="#5f594d" font-size="17">Resume las penalizaciones por retraso</text>
+
+    <rect x="372" y="272" width="640" height="150" rx="18" fill="#f9f5ec" stroke="#dcd3c2" stroke-width="1.2" filter="url(#ow-soft)"/>
+    <circle cx="398" cy="306" r="4" fill="#93a17d"><animate attributeName="opacity" values="1;0.35;1" dur="3.5s" repeatCount="indefinite"/></circle>
+    <text x="414" y="311" fill="#6f7d5c" font-family="'Courier New', monospace" font-size="13">respuesta · 100% local</text>
+    <text x="396" y="346" fill="#4a463f" font-size="17">Hay dos penalizaciones: 1) interés de demora del</text>
+    <text x="396" y="374" fill="#4a463f" font-size="17">3% mensual; 2) suspensión del servicio a los 60</text>
+    <text x="396" y="402" fill="#4a463f" font-size="17">días de impago. Fuente: contrato-marco.pdf, pág. 5.</text>
+
+    <rect x="372" y="600" width="700" height="52" rx="26" fill="#f6f1e8" stroke="#d6cab5" stroke-width="1.2"/>
+    <text x="398" y="632" fill="#a99e8d" font-size="17">Pregunta a tus documentos…</text>
+    <circle cx="1180" cy="626" r="22" fill="#c7a35e"><animate attributeName="opacity" values="1;0.7;1" dur="4s" repeatCount="indefinite"/></circle>
+    <path d="M1172 634 l14 -8 -14 -8 4 8 z" fill="#f5f2e8"/>
+  </g>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Inventario de prompts y gasto mensual por flujo">
+  <defs>
+    <filter id="ti-sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#5c5648" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="#ece4d6"/>
+
+  <rect x="64" y="56" width="1152" height="608" rx="20" fill="#f6f1e8" stroke="#dcd3c2" stroke-width="1.2" filter="url(#ti-sh)"/>
+  <rect x="64" y="56" width="1152" height="52" rx="20" fill="#efe8da"/>
+  <rect x="64" y="90" width="1152" height="18" fill="#efe8da"/>
+  <circle cx="96" cy="82" r="6" fill="#bf7e63"/>
+  <circle cx="120" cy="82" r="6" fill="#c7a35e"/>
+  <circle cx="144" cy="82" r="6" fill="#93a17d"/>
+  <text x="184" y="88" fill="#9a9182" font-family="'Courier New', monospace" font-size="15">salvatustokens / inventario-prompts.csv</text>
+
+  <text x="100" y="160" fill="#4a463f" font-family="Georgia, 'Times New Roman', serif" font-size="30">Inventario semanal de prompts</text>
+  <line x1="102" y1="178" x2="240" y2="178" stroke="#b98b6e" stroke-width="2"/>
+
+  <g font-family="Helvetica, Arial, sans-serif" font-size="18">
+    <!-- cabecera -->
+    <text x="120" y="244" fill="#8a8273" font-size="14" letter-spacing="1">FLUJO</text>
+    <text x="560" y="244" fill="#8a8273" font-size="14" letter-spacing="1">MODELO</text>
+    <text x="760" y="244" fill="#8a8273" font-size="14" letter-spacing="1">TOKENS/MES</text>
+    <text x="980" y="244" fill="#8a8273" font-size="14" letter-spacing="1">ACCIÓN</text>
+    <line x1="100" y1="260" x2="1180" y2="260" stroke="#dcd3c2" stroke-width="1.2"/>
+
+    <!-- filas -->
+    <g fill="#4a463f">
+      <text x="120" y="314">Resumir tickets soporte</text>
+      <rect x="556" y="296" width="86" height="28" rx="14" fill="#f3ecda" stroke="#e0d4ba" stroke-width="1"/>
+      <text x="599" y="315" fill="#8a6a2e" font-size="14" text-anchor="middle">Pago</text>
+      <text x="760" y="314" font-family="'Courier New', monospace" font-size="17">1.450.000</text>
+      <text x="980" y="314" fill="#6f7d5c">Preprocesar local</text>
+    </g>
+    <line x1="100" y1="338" x2="1180" y2="338" stroke="#efe8da" stroke-width="1.2"/>
+    <g fill="#4a463f">
+      <text x="120" y="392">Limpiar reuniones</text>
+      <rect x="556" y="374" width="86" height="28" rx="14" fill="#eef0e4" stroke="#c2cdac" stroke-width="1"/>
+      <text x="599" y="393" fill="#5f6e48" font-size="14" text-anchor="middle">Local</text>
+      <text x="760" y="392" font-family="'Courier New', monospace" font-size="17">520.000</text>
+      <text x="980" y="392" fill="#8a8273">Mantener</text>
+    </g>
+    <line x1="100" y1="416" x2="1180" y2="416" stroke="#efe8da" stroke-width="1.2"/>
+    <g fill="#4a463f">
+      <text x="120" y="470">Redacción final cliente</text>
+      <rect x="556" y="452" width="86" height="28" rx="14" fill="#f3ecda" stroke="#e0d4ba" stroke-width="1"/>
+      <text x="599" y="471" fill="#8a6a2e" font-size="14" text-anchor="middle">Pago</text>
+      <text x="760" y="470" font-family="'Courier New', monospace" font-size="17">230.000</text>
+      <text x="980" y="470" fill="#a06a4d">Pagar calidad</text>
+    </g>
+  </g>
+
+  <!-- ahorro -->
+  <rect x="800" y="556" width="380" height="64" rx="16" fill="#efe6d2" stroke="#dcc89a" stroke-width="1.4">
+    <animate attributeName="opacity" values="1;0.88;1" dur="4.5s" repeatCount="indefinite"/>
+  </rect>
+  <text x="990" y="596" fill="#7a6231" font-family="Georgia, serif" font-size="22" text-anchor="middle">Ahorro estimado: 34 %</text>
+</svg>
