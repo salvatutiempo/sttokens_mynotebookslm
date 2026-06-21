@@ -41,6 +41,7 @@ LLM_OV_CONFIG = {
 
 # --- Generation --------------------------------------------------------------
 MAX_NEW_TOKENS = 256      # keep answers short -> much lower latency on CPU
+NO_REPEAT_NGRAM = 3       # block repeated n-grams (small models loop otherwise)
 # Prompt-lookup decoding can speed up RAG generation (it reuses n-grams from the
 # context). It is experimental on stateful OpenVINO models, so it is OFF by
 # default. Set to e.g. 10 to try it; if generation errors, set back to 0.
