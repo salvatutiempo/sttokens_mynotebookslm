@@ -7,21 +7,18 @@ Requires running first:  python download_models.py  and  python ingest.py
 
 import sys
 
-import config
 import core
 
 
 def main() -> int:
-    if not config.INDEX_DIR.exists():
+    if not core.index_exists():
         print("[!] No index found. Run first: python ingest.py")
         return 1
 
-    print("[>] Loading models (this may take a few seconds on the N100)...")
+    print("[>] Loading models (this may take a few seconds)...")
     embeddings = core.get_embeddings()
-    vectorstore = core.load_index(embeddings)
-    retriever = vectorstore.as_retriever(search_kwargs={"k": config.RETRIEVER_K})
+    retriever = core.get_retriever(embeddings)
     llm = core.get_llm()
-    chain = core.build_rag_chain(retriever, llm)
 
     print("\nOffline NotebookLM ready. Type your question (or 'exit').\n")
     while True:
@@ -35,12 +32,17 @@ def main() -> int:
         if question.lower() in {"exit", "quit", "salir"}:
             break
 
-        result = chain.invoke({"input": question})
-        print("\nAI  >", result["answer"].strip())
+        docs = retriever.invoke(question)
+        context = core.format_context(docs)
 
-        sources = {doc.metadata.get("source", "?") for doc in result.get("context", [])}
+        print("\nAI  > ", end="", flush=True)
+        for token in llm.stream(question, context):
+            print(token, end="", flush=True)
+        print()
+
+        sources = core.sources_of(docs)
         if sources:
-            print("Sources:", ", ".join(sorted(sources)))
+            print("Sources:", ", ".join(sources))
         print()
 
     return 0
