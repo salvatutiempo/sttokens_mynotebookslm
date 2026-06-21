@@ -40,8 +40,12 @@ LLM_OV_CONFIG = {
 }
 
 # --- Generation --------------------------------------------------------------
-MAX_NEW_TOKENS = 256      # keep answers short -> much lower latency on CPU
+MAX_NEW_TOKENS = 256      # hard cap (safety); also drives the word budget below
 NO_REPEAT_NGRAM = 3       # block repeated n-grams (small models loop otherwise)
+# Guardrail: instruct the model to give a COMPLETE answer within a word budget
+# derived from MAX_NEW_TOKENS, so it self-limits instead of being truncated.
+# Spanish needs ~1.5-2 tokens/word, so ~0.5 words per token leaves headroom.
+ANSWER_WORD_RATIO = 0.5
 # Prompt-lookup decoding can speed up RAG generation (it reuses n-grams from the
 # context). It is experimental on stateful OpenVINO models, so it is OFF by
 # default. Set to e.g. 10 to try it; if generation errors, set back to 0.
