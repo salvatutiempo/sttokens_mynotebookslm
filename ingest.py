@@ -1,6 +1,7 @@
-"""Indexa los documentos de ./documents en el índice vectorial FAISS.
+"""Index the documents in ./documents into the FAISS vector index.
 
-Ejecútalo cada vez que añadas o cambies documentos:
+Incremental: only new or changed documents are (re)embedded.
+Run it every time you add or change documents:
     python ingest.py
 """
 
@@ -11,20 +12,19 @@ import core
 
 
 def main() -> int:
-    print(f"[>] Leyendo documentos de {config.DOCUMENTS_DIR}")
-    docs = core.load_documents()
-    if not docs:
-        print("[!] No se encontraron .txt, .md o .pdf en la carpeta documents/")
-        return 1
-
-    chunks = core.split_documents(docs)
-    print(f"[>] {len(docs)} documento(s) -> {len(chunks)} fragmento(s)")
-
-    print("[>] Calculando embeddings con OpenVINO...")
+    print(f"[>] Indexing documents from {config.DOCUMENTS_DIR}")
     embeddings = core.get_embeddings()
-    core.build_index(chunks, embeddings)
+    summary = core.build_or_update_index(embeddings)
 
-    print(f"[OK] Índice guardado en {config.INDEX_DIR}")
+    if summary["action"] == "empty":
+        print("[!] No .txt, .md or .pdf files found in the documents/ folder")
+        return 1
+    if summary["action"] == "uptodate":
+        print("[OK] Index already up to date.")
+        return 0
+
+    print(f"[OK] {summary['action']}: {summary['files']} file(s), "
+          f"{summary['chunks']} new chunk(s) -> {config.INDEX_DIR}")
     return 0
 
 

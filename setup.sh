@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Crea un entorno virtual AISLADO e instala todas las dependencias.
-# Uso:  bash setup.sh
+# Creates an ISOLATED virtual environment and installs all dependencies.
+# Usage:  bash setup.sh
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -8,21 +8,21 @@ cd "$(dirname "$0")"
 PYTHON="${PYTHON:-python3}"
 VENV_DIR=".venv"
 
-echo "[>] Creando entorno virtual en ${VENV_DIR}"
+echo "[>] Creating virtual environment in ${VENV_DIR}"
 "${PYTHON}" -m venv "${VENV_DIR}"
 
 # shellcheck disable=SC1091
 source "${VENV_DIR}/bin/activate"
 
-echo "[>] Actualizando pip"
+echo "[>] Upgrading pip"
 python -m pip install --upgrade pip
 
-echo "[>] Instalando dependencias (puede tardar)"
+echo "[>] Installing dependencies (this may take a while)"
 pip install -r requirements.txt
 
 echo
-echo "[OK] Entorno listo. Próximos pasos:"
+echo "[OK] Environment ready. Next steps:"
 echo "     source ${VENV_DIR}/bin/activate"
-echo "     python download_models.py   # una vez, necesita internet"
-echo "     python ingest.py            # indexa ./documents"
-echo "     python chat.py              # chatea con tus documentos"
+echo "     python download_models.py   # once, needs internet"
+echo "     python ingest.py            # indexes ./documents"
+echo "     python chat.py              # chat with your documents"

@@ -15,11 +15,11 @@ using a RAG (*Retrieval-Augmented Generation*) pattern.
 
 | Piece | Choice | Reason |
 |-------|--------|--------|
-| **SLM** | `Qwen2.5-1.5B-Instruct` (INT4) | Recent, multilingual (good Spanish) and ~1 GB in INT4: fits comfortably on the N100. |
-| **Acceleration** | **OpenVINO** | Intel's runtime; squeezes the 4 cores (and optionally the iGPU) of the N100. |
+| **SLM** | `Qwen2.5-0.5B-Instruct` (INT4) | Speed-first default: flies on an N100 (~0.4 GB). Switch to 1.5B/3B for more quality. |
+| **Acceleration** | **OpenVINO** | Intel's runtime; squeezes the 4-8 cores (and optionally the iGPU) of the N-series. |
 | **Embeddings** | `multilingual-e5-small` | Lightweight (~118 M) and multilingual, also via OpenVINO. |
-| **Vector store** | **FAISS** | Local, server-less, no external dependencies. |
-| **Orchestration** | **LangChain** | Wires document loading, retrieval and generation with little code. |
+| **Vector store** | **FAISS** | Local, server-less, no external dependencies; indexed incrementally. |
+| **Orchestration** | **LangChain** | Wires document loading, retrieval and embeddings with little code. |
 
 The **Intel N100** is a 6 W, 4-core CPU with no dedicated GPU. The key to making
 an LLM usable is: **small model + INT4 quantization + OpenVINO**.
@@ -109,6 +109,12 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
 > The `.venv` virtual environment keeps the dependencies separate from the
 > system, as required by the isolation goal.
 
+> **About INT4 quantization.** The SLM is exported with *data-free* weight-only
+> INT4 (no calibration dataset), so `download_models.py` does not need the
+> `datasets` library. If you prefer data-aware INT4 (slightly better accuracy),
+> run `pip install datasets` and drop the `--group-size/--ratio` flags in
+> `download_models.py`.
+
 ---
 
 ## Usage
@@ -129,9 +135,9 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
    ```
 
    ```
-   You > In what year was Vinotopía founded?
+   You > In what year was Vinotopia founded?
    AI  > According to the document, in the year 2026.
-   Sources: documents/ejemplo.md
+   Sources: documents/example.md
    ```
 
    **Web (Streamlit):**
@@ -144,7 +150,7 @@ python download_models.py      # downloads and exports the models to OpenVINO (o
    re-index documents from the interface itself.
 
 Whenever you add or change documents, run `python ingest.py` again (or click
-**Indexar documentos** in the web interface).
+**Index documents** in the web interface).
 
 ---
 
@@ -152,34 +158,88 @@ Whenever you add or change documents, run `python ingest.py` again (or click
 
 ```
 config.py           Parameters: models, paths, chunking, device.
-core.py             RAG logic: loading, embeddings, SLM, FAISS and chain.
+core.py             RAG logic: loading, embeddings, streaming SLM, FAISS.
 download_models.py  Exports the SLM (INT4) and embeddings to OpenVINO. Once.
 ingest.py           Indexes documents/ into the FAISS index.
 chat.py             Interactive terminal chat.
 app_web.py          Web interface (Streamlit) with chat and re-indexing.
 requirements.txt    Dependencies for the isolated environment.
 setup.sh            Creates the venv and installs everything.
-documents/          Your sources (includes a sample ejemplo.md).
+documents/          Your sources (includes a sample example.md).
 ```
 
 ---
 
 ## Quick customization (`config.py`)
 
-- **Higher quality**: `LLM_MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"` (recommended on
-  a 16 GB N100; slower but more accurate, less hallucination).
-- **Lighter / faster**: `LLM_MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"`.
+- **More quality (slower)**: `LLM_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"` or
+  `"Qwen/Qwen2.5-3B-Instruct"`. **Re-run `python download_models.py`** after
+  changing it (each model is exported into its own folder).
 - **Try the iGPU**: `DEVICE = "GPU"` (or `"AUTO"`).
 - **Longer/shorter answers**: tune `MAX_NEW_TOKENS`.
 - **Retrieve more context**: raise `RETRIEVER_K` (at the cost of speed).
 
-> **Which SLM should I pick?** On an **8 GB** N100, stick with the default
-> `Qwen2.5-1.5B-Instruct` (snappy, ~8-14 tok/s). On a **16 GB** N100, prefer
-> `Qwen2.5-3B-Instruct`: it follows "answer only from the context" more
-> reliably and hallucinates less, at ~3-6 tok/s. Changing the embeddings model
-> is independent and only affects search quality, not the wording of answers.
+---
+
+## Performance (making it usable on an N100)
+
+This is a CPU SLM, so latency is dominated by the language model. The defaults
+are tuned for responsiveness:
+
+- **Small model by default** (`Qwen2.5-0.5B-Instruct`) — the biggest speed lever.
+- **Short answers** (`MAX_NEW_TOKENS = 256`) — generation time scales with the
+  number of tokens produced.
+- **Token streaming** — both the web and terminal UIs show the answer as it is
+  generated, so it never feels frozen.
+- **OpenVINO CPU tuning** (`LLM_OV_CONFIG`): `LATENCY` hint, `u8` KV-cache and
+  dynamic quantization. If model loading fails, it falls back automatically.
+- **Faster ingestion**: embeddings run in batches (`EMBED_BATCH_SIZE`), the index
+  is **incremental** (only new/changed files are re-embedded), and `PDF_FAST =
+  True` skips table detection for big PDFs.
+
+Optional, experimental:
+
+- **`PROMPT_LOOKUP`** (default `0`): set to e.g. `10` to enable prompt-lookup
+  decoding, which can speed up RAG generation by reusing n-grams from the
+  context. It is experimental on stateful OpenVINO models — if generation
+  errors, set it back to `0`.
+
+> **Quality vs speed.** Retrieval quality comes from the embeddings model, not
+> the SLM, so a smaller SLM mostly affects *wording*, not which facts are found.
+> Step up to 1.5B/3B (and raise `MAX_NEW_TOKENS`) when you want richer answers.
 
 ---
+
+## Troubleshooting
+
+- **`RuntimeError: basic_ios::clear: iostream error` while exporting.** A write
+  failed. The export writes a temporary model (~3 GB) under `/tmp`, and on many
+  NAS/Proxmox systems **`/tmp` is a RAM-backed `tmpfs`** (check with `df -hT`):
+  it overflows and, since it lives in RAM, it also worsens out-of-memory. Point
+  `TMPDIR` to a real disk that has space:
+  ```bash
+  rm -rf models/llm-ov-int4
+  mkdir -p /root/tmp && export TMPDIR=/root/tmp
+  python download_models.py
+  ```
+  If instead the **system disk itself** is small, move the cache and models to a
+  big volume: `export HF_HOME=/big/hf-cache` and
+  `export NOTEBOOKLM_MODELS_DIR=/big/models`.
+
+- **`download_models.py` is killed (`SIGKILL` / signal 9) during "Applying
+  Weight Compression".** This is the OOM killer: exporting/quantizing the model
+  briefly needs several GB of RAM (much more than *running* it). Options:
+  - Add temporary swap on the device and retry:
+    ```bash
+    rm -rf models/llm-ov-int4
+    fallocate -l 8G /swapfile && chmod 600 /swapfile
+    mkswap /swapfile && swapon /swapfile
+    python download_models.py
+    ```
+  - Or export on a machine with more RAM and copy the `models/` folder over
+    (the N100 only needs the final IR to *run*).
+  - Or use a smaller SLM in `config.py` (e.g. `Qwen/Qwen2.5-0.5B-Instruct`).
+  - Always delete a partial `models/llm-ov-int4` before retrying.
 
 ## Notes and limitations
 

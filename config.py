@@ -1,37 +1,61 @@
-"""Configuración central del NotebookLM offline.
+"""Central configuration for the offline NotebookLM.
 
-Un único lugar para ajustar modelos, rutas y parámetros del RAG.
-Pensado para un Intel N100 (4 núcleos, sin GPU dedicada, 8-16 GB de RAM).
+A single place to tune models, paths and RAG parameters.
+Targeted at an Intel N100/N300 (4-8 cores, no dedicated GPU, ~16 GB of RAM).
 """
 
+from os import environ
 from pathlib import Path
 
-# --- Rutas -------------------------------------------------------------------
+# --- Paths -------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-DOCUMENTS_DIR = BASE_DIR / "documents"          # tus .txt, .md y .pdf
-MODELS_DIR = BASE_DIR / "models"                # modelos exportados a OpenVINO
-INDEX_DIR = BASE_DIR / "storage" / "faiss_index"  # índice vectorial persistente
+DOCUMENTS_DIR = BASE_DIR / "documents"            # your .txt, .md and .pdf files
+# Models can be large; on a NAS (small system disk) point this to a big volume
+# with:  export NOTEBOOKLM_MODELS_DIR=/mnt/pool/models
+MODELS_DIR = Path(environ.get("NOTEBOOKLM_MODELS_DIR", BASE_DIR / "models"))
+INDEX_DIR = BASE_DIR / "storage" / "faiss_index"  # persistent vector index
 
-# --- Modelo de lenguaje (SLM) ------------------------------------------------
-# Qwen2.5-1.5B-Instruct: equilibrio calidad/peso ideal para la N100.
-# Es reciente, multilingüe (responde bien en español) y en INT4 ocupa ~1 GB.
-# Alternativas:
-#   - "Qwen/Qwen2.5-0.5B-Instruct"  -> más ligero/rápido, menor calidad.
-#   - "meta-llama/Llama-3.2-3B-Instruct" -> mejor calidad, más lento/pesado.
-LLM_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
-LLM_OV_DIR = MODELS_DIR / "llm-ov-int4"
+# --- Language model (SLM) ----------------------------------------------------
+# Speed-first default: Qwen2.5-0.5B-Instruct flies on an N100 (INT4 ~0.4 GB).
+# For better answers (slower) switch to "Qwen/Qwen2.5-1.5B-Instruct" or 3B.
+# NOTE: changing this requires re-running `python download_models.py` (each
+# model is exported into its own folder, derived from the name below).
+LLM_MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"
+LLM_OV_DIR = MODELS_DIR / f"llm-{LLM_MODEL_ID.split('/')[-1].lower()}-int4"
 
-# --- Modelo de embeddings ----------------------------------------------------
-# multilingual-e5-small: ligero (~118M) y multilingüe (incluye español).
+# --- Embeddings model --------------------------------------------------------
+# multilingual-e5-small: lightweight (~118M) and multilingual (includes Spanish).
 EMBED_MODEL_ID = "intfloat/multilingual-e5-small"
 EMBED_OV_DIR = MODELS_DIR / "embed-ov"
 
 # --- Hardware ----------------------------------------------------------------
-# "CPU" es lo más estable en la N100. Puedes probar "GPU" (iGPU UHD) o "AUTO".
+# "CPU" is the most stable. You may try "GPU" (iGPU UHD) or "AUTO".
 DEVICE = "CPU"
+# OpenVINO runtime tuning for the LLM (single-stream latency on CPU).
+# If model loading ever fails, get_llm() falls back to simpler configs.
+LLM_OV_CONFIG = {
+    "PERFORMANCE_HINT": "LATENCY",
+    "KV_CACHE_PRECISION": "u8",            # smaller KV cache -> less bandwidth
+    "DYNAMIC_QUANTIZATION_GROUP_SIZE": "32",
+}
 
-# --- Parámetros del RAG ------------------------------------------------------
-CHUNK_SIZE = 800          # caracteres por fragmento
-CHUNK_OVERLAP = 120       # solapamiento entre fragmentos
-RETRIEVER_K = 4           # nº de fragmentos recuperados por pregunta
-MAX_NEW_TOKENS = 512      # longitud máxima de la respuesta
+# --- Generation --------------------------------------------------------------
+MAX_NEW_TOKENS = 256      # hard cap (safety); also drives the word budget below
+NO_REPEAT_NGRAM = 3       # block repeated n-grams (small models loop otherwise)
+# Guardrail: instruct the model to give a COMPLETE answer within a word budget
+# derived from MAX_NEW_TOKENS, so it self-limits instead of being truncated.
+# Spanish needs ~1.5-2 tokens/word, so ~0.5 words per token leaves headroom.
+ANSWER_WORD_RATIO = 0.5
+# Prompt-lookup decoding can speed up RAG generation (it reuses n-grams from the
+# context). It is experimental on stateful OpenVINO models, so it is OFF by
+# default. Set to e.g. 10 to try it; if generation errors, set back to 0.
+PROMPT_LOOKUP = 0
+
+# --- Embeddings / ingestion --------------------------------------------------
+EMBED_BATCH_SIZE = 16     # bigger batches = faster ingestion (more RAM)
+PDF_FAST = False          # True: skip table detection -> much faster big PDFs
+
+# --- RAG parameters ----------------------------------------------------------
+CHUNK_SIZE = 1000         # characters per chunk (fewer chunks = faster ingest)
+CHUNK_OVERLAP = 120       # overlap between chunks
+RETRIEVER_K = 3           # number of chunks retrieved per question
