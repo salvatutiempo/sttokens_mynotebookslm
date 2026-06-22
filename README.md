@@ -1,4 +1,4 @@
-## Offline NotebookLM in a Cheap Intel device
+## Offline NotebookLM (RAG) in a Cheap Intel device
 
 A minimal, fully local NotebookLM clone: ask natural-language questions about  
 your own documents (**text, Markdown and PDF**) **without an internet**  
