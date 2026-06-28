@@ -30,21 +30,24 @@ def export(model_id: str, out_dir, extra_args: list[str]) -> None:
     subprocess.run(cmd, check=True)
 
 
-def main() -> int:
-    # SLM quantized to INT4 (weights ~1 GB for Qwen2.5-1.5B).
-    # Data-free weight-only quantization (explicit --group-size/--ratio): no
-    # calibration dataset, so it does not require the `datasets` library and is
-    # faster/lighter. Quality is more than enough for SLM-based RAG.
-    export(
-        config.LLM_MODEL_ID,
-        config.LLM_OV_DIR,
-        [
-            "--weight-format", "int4",
-            "--group-size", "128",
-            "--ratio", "1.0",
-            "--task", "text-generation-with-past",
-        ],
-    )
+def main(argv: list[str]) -> int:
+    # LLM(s) to export: the ids passed as arguments, or the default from config.
+    # Example: python download_models.py "Qwen/Qwen2.5-1.5B-Instruct"
+    llm_ids = argv[1:] or [config.LLM_MODEL_ID]
+    for model_id in llm_ids:
+        # Data-free weight-only INT4 (explicit --group-size/--ratio): no
+        # calibration dataset, so it does not need the `datasets` library and is
+        # faster/lighter. Quality is more than enough for SLM-based RAG.
+        export(
+            model_id,
+            config.llm_dir(model_id),
+            [
+                "--weight-format", "int4",
+                "--group-size", "128",
+                "--ratio", "1.0",
+                "--task", "text-generation-with-past",
+            ],
+        )
     # Embeddings (feature-extraction), default precision.
     export(
         config.EMBED_MODEL_ID,
@@ -56,4 +59,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv))
