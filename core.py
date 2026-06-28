@@ -110,11 +110,12 @@ def _word_budget() -> int:
 class ChatLLM:
     """Thin wrapper around an OpenVINO causal LM with token streaming."""
 
-    def __init__(self):
+    def __init__(self, model_dir=None):
         from optimum.intel import OVModelForCausalLM
         from transformers import AutoTokenizer
 
-        self.tokenizer = AutoTokenizer.from_pretrained(str(config.LLM_OV_DIR))
+        model_dir = str(model_dir or config.LLM_OV_DIR)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
         # Load with runtime tuning; fall back to simpler configs if a property
         # is not accepted, so the app always starts.
@@ -122,7 +123,7 @@ class ChatLLM:
         for ov_config in (config.LLM_OV_CONFIG, {"PERFORMANCE_HINT": "LATENCY"}, {}):
             try:
                 self.model = OVModelForCausalLM.from_pretrained(
-                    str(config.LLM_OV_DIR), device=config.DEVICE, ov_config=ov_config
+                    model_dir, device=config.DEVICE, ov_config=ov_config
                 )
                 break
             except Exception as exc:  # noqa: BLE001 - try the next, simpler config
@@ -188,8 +189,13 @@ class ChatLLM:
         thread.join()
 
 
-def get_llm() -> ChatLLM:
-    return ChatLLM()
+def get_llm(model_dir=None) -> ChatLLM:
+    return ChatLLM(model_dir)
+
+
+def llm_is_ready(model_dir) -> bool:
+    """True if the given model has been exported to OpenVINO."""
+    return (Path(model_dir) / "openvino_model.xml").exists()
 
 
 # --- 4. Vector index (FAISS, incremental) ------------------------------------
