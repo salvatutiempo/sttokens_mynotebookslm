@@ -1,2 +1,0 @@
-# No runtime dependencies.
-# Cloudflare Pages build command: python build.py
