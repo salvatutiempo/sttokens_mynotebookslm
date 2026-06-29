@@ -1,4 +1,4 @@
-# Offline NotebookLM on an Intel N100
+# Offline NotebookLM on an Intel low power device
 
 A minimal, fully local NotebookLM clone: ask natural-language questions about
 your own documents (**text, Markdown and PDF**) **without an internet
