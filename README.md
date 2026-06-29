@@ -9,28 +9,29 @@ using a RAG (*Retrieval-Augmented Generation*) pattern.
 > After the initial one-time model download, the system runs 100% offline.
 > Your documents never leave the machine.
 
+---
 ## What's new in v2.0.0
 
 ### Model picker in the web UI
 - A sidebar selector lets you switch between any models listed in `AVAILABLE_LLMS` (`config.py`) without restarting the app.
-- - The previous model is **unloaded from RAM** before the new one is loaded (`get_llm.clear()` + `gc.collect()`), keeping memory usage predictable on a device with limited RAM like the N100.
-  - - `download_models.py` now accepts model IDs as arguments so you can export multiple models in one command:
+- The previous model is **unloaded from RAM** before the new one is loaded (`get_llm.clear()` + `gc.collect()`), keeping memory usage predictable on a device with limited RAM like the N100.
+  - `download_models.py` now accepts model IDs as arguments so you can export multiple models in one command:
     -   ```
           python download_models.py "Qwen/Qwen2.5-0.5B-Instruct" "Qwen/Qwen2.5-1.5B-Instruct"
           ```
 
-        ### Drag-and-drop document uploads
-        - A file uploader widget in the sidebar lets you add `.txt`, `.md` and `.pdf` files directly from the browser — no need to SSH into the machine to drop files in the `documents/` folder.
-        - - Uploaded files are saved to `documents/` and indexed immediately in one click ("➕ Add & index").
-          -
-          ### Load-on-demand with model readiness check
-          - `core.llm_is_ready(model_dir)` checks whether a given model has been exported before trying to load it. If the model is not yet exported, the UI shows a clear warning with the exact command to run.
-          - - Each model is stored in its own folder (`llm-<model-name>-int4/`), managed by the new `config.llm_dir()` helper.
-            -
-            ### Cleaner `core.py` API
-            - `get_llm()` now accepts an explicit `model_dir` parameter, allowing the web UI to load whichever model the user selected rather than always loading the default.
-            -
-            ---
+### Drag-and-drop document uploads
+- A file uploader widget in the sidebar lets you add `.txt`, `.md` and `.pdf` files directly from the browser — no need to SSH into the machine to drop files in the `documents/` folder.
+- Uploaded files are saved to `documents/` and indexed immediately in one click ("➕ Add & index").
+          
+### Load-on-demand with model readiness check
+- `core.llm_is_ready(model_dir)` checks whether a given model has been exported before trying to load it. If the model is not yet exported, the UI shows a clear warning with the exact command to run.
+- Each model is stored in its own folder (`llm-<model-name>-int4/`), managed by the new `config.llm_dir()` helper.
+            
+### Cleaner `core.py` API
+- `get_llm()` now accepts an explicit `model_dir` parameter, allowing the web UI to load whichever model the user selected rather than always loading the default.
+            
+---
 
 ## Why these choices?
 
